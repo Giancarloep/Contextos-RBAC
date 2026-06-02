@@ -1,30 +1,54 @@
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { NavigationContainer } from "@react-navigation/native";
-import LoginScreen from "../screens/LoginScreen";
-import TabNavigator from "./AppNavigator"; // Importa tus pestañas que acabamos de arreglar
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
+import HomeScreen from "../screens/HomeScreen";
+import SettingsScreen from "../screens/SettingScreen";
 import { useAuth } from "../context/AuthContext";
 
-type RootStackParamList = {
-  Login: undefined;
-  MainTabs: undefined;
+type TabsParamList = {
+  Home: undefined;
+  Settings: undefined;
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
-
-export default function AppNavigator() {
+const Tab = createBottomTabNavigator<TabsParamList>();
+export type { TabsParamList };
+export default function TabNavigator() {
   const { userRole } = useAuth();
-
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {userRole === null ? (
-          // Si no hay sesión, se bloquea en la pantalla de Login
-          <Stack.Screen name="Login" component={LoginScreen} />
-        ) : (
-          // Si el estado cambia, pasa automáticamente a las pestañas
-          <Stack.Screen name="MainTabs" component={TabNavigator} />
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Tab.Navigator
+      initialRouteName={userRole === "admin" ? "Settings" : "Home"}
+      screenOptions={{
+        tabBarActiveTintColor: "#5f0650",
+        tabBarStyle: {
+          backgroundColor: "#fff",
+          borderTopColor: "#ccc",
+        },
+        headerStyle: { backgroundColor: "#5f0650" },
+        headerTintColor: "#fff"
+      }}
+    >
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          title: "Inicio",
+          headerShown: true,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      {userRole === "admin" && (
+        <Tab.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            title: "Configuración",
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="settings" size={size} color={color} />
+            ),
+          }}
+        />
+      )}
+    </Tab.Navigator>
   );
 }
